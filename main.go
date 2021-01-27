@@ -76,14 +76,14 @@ func getAveragePrice() float64 {
 		numericString := element.Text[1:]
 		price, err := strconv.ParseFloat(numericString, 64)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalln("Float parse error: ", err)
 		}
 		prices = append(prices, price)
 	})
 
 	err := c.Visit("https://www.em6live.co.nz/")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Colly visit error: ", err)
 	}
 
 	var sum float64 = 0
@@ -105,7 +105,7 @@ func getAverageCarbonOutput() float64 {
 
 	req, err := http.NewRequest("GET", "https://api.electricitymap.org/v3/state", nil)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("HTTP request creation error: ", err)
 	}
 
 	req.Header.Add("Origin", "https://www.electricitymap.org")
@@ -116,7 +116,7 @@ func getAverageCarbonOutput() float64 {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("HTTP do request error: ", err)
 	}
 
 	if resp.Body != nil {
@@ -125,13 +125,13 @@ func getAverageCarbonOutput() float64 {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("HTTP body read error: ", err)
 	}
 
 	var data interface{}
 	jsonErr := json.Unmarshal(body, &data)
 	if jsonErr != nil {
-		log.Fatalln(jsonErr)
+		log.Fatalln("JSON unmarshal error: ", jsonErr)
 	}
 
 	// hacky as hell
@@ -184,15 +184,17 @@ func setCo2(ui *lorca.UI, value float64) {
 }
 
 func main() {
+	println(lorca.LocateChrome())
+
 	ui, err := lorca.New("", "", 480, 320)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln("Lorca initialisation error:",err)
 	}
 	defer ui.Close()
 
-	//ui.SetBounds(lorca.Bounds{
-	//	WindowState: lorca.WindowStateFullscreen,
-	//})
+	ui.SetBounds(lorca.Bounds{
+		WindowState: lorca.WindowStateFullscreen,
+	})
 
 	ui.Load("data:text/html," + url.PathEscape(html))
 
